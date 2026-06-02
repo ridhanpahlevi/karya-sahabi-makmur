@@ -15,6 +15,8 @@ import {
   Users,
 } from "lucide-react";
 import logo from "./assets/logo.jpeg";
+import commissionerPhoto from "./assets/komisaris.png";
+import directorPhoto from "./assets/direktur.png";
 import partnerTransmart from "./assets/transmart.png";
 import partnerExo from "./assets/exodrinks.png";
 import partnerGoFruit from "./assets/gofruit.png";
@@ -37,6 +39,7 @@ const leaders = [
     message:
       "Governance and integrity are the bedrock of our operations. We are committed to transparency and trusted leadership across every supply channel.",
     icon: ShieldCheck,
+    photo: commissionerPhoto,
   },
   {
     id: "andy",
@@ -45,6 +48,7 @@ const leaders = [
     message:
       "We build premium supply solutions with deep partnership, quality assurance, and continuous improvement at every stage.",
     icon: Briefcase,
+    photo: directorPhoto,
   },
 ];
 
@@ -183,11 +187,22 @@ function SectionTitle({ label, title, description }) {
   );
 }
 
-function ContactInfoRow({ icon: Icon, text }) {
+function ContactInfoRow({ icon: Icon, text, href }) {
   return (
     <div className="flex items-center gap-3 text-sm text-slate-300">
       <Icon className="h-4 w-4 text-emerald-300" />
-      <span>{text}</span>
+      {href ? (
+        <a
+          href={href}
+          target={href.startsWith("http") ? "_blank" : undefined}
+          rel={href.startsWith("http") ? "noreferrer" : undefined}
+          className="text-slate-300 transition hover:text-white"
+        >
+          {text}
+        </a>
+      ) : (
+        <span>{text}</span>
+      )}
     </div>
   );
 }
@@ -211,10 +226,26 @@ function InputField({ label, name, type, value, onChange }) {
   );
 }
 
+function LeaderPhoto({ name }) {
+  const initials = name
+    .split(" ")
+    .map((part) => part[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+
+  return (
+    <div className="flex h-28 w-28 items-center justify-center rounded-full bg-gradient-to-br from-emerald-500/20 to-sky-500/20 text-3xl font-semibold text-white shadow-lg shadow-slate-950/30">
+      {initials}
+    </div>
+  );
+}
+
 function App() {
   const { scrollYProgress } = useScroll();
   const [navSolid, setNavSolid] = useState(false);
   const [activeLeader, setActiveLeader] = useState(leaders[0].id);
+  const [selectedLeader, setSelectedLeader] = useState(null);
   const [activeFilter, setActiveFilter] = useState("all");
   const [formData, setFormData] = useState({ name: "", email: "", message: "" });
   const [sent, setSent] = useState(false);
@@ -382,7 +413,10 @@ function App() {
                   <motion.button
                     key={leader.id}
                     type="button"
-                    onClick={() => setActiveLeader(leader.id)}
+                    onClick={() => {
+                      setActiveLeader(leader.id);
+                      setSelectedLeader(leader);
+                    }}
                     className={`group relative overflow-hidden rounded-[1.8rem] border px-6 py-8 text-left shadow-lg transition duration-300 ${
                       activeLeader === leader.id
                         ? "border-emerald-400/30 bg-[#0B1B31]/95 shadow-[0_30px_80px_-45px_rgba(16,185,116,0.45)]"
@@ -408,6 +442,47 @@ function App() {
             </div>
           </div>
         </motion.section>
+
+        <AnimatePresence>
+          {selectedLeader && (
+            <motion.div
+              className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/90 px-4 py-6 text-slate-100"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+              onClick={() => setSelectedLeader(null)}
+            >
+              <motion.div
+                initial={{ opacity: 0, y: 56, scale: 0.9, rotate: -3 }}
+                animate={{ opacity: 1, y: 0, scale: 1, rotate: 0 }}
+                exit={{ opacity: 0, y: 32, scale: 0.95, rotate: 3 }}
+                transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+                className="relative w-full max-w-2xl overflow-hidden rounded-[2rem] border border-white/10 bg-[#06182e]/95 p-6 shadow-2xl shadow-slate-950/40"
+                onClick={(event) => event.stopPropagation()}
+              >
+                <button
+                  type="button"
+                  onClick={() => setSelectedLeader(null)}
+                  className="absolute right-4 top-4 inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/5 text-white transition hover:bg-white/10"
+                  aria-label="Close profile popup"
+                >
+                  ✕
+                </button>
+                <div className="flex flex-col gap-6">
+                  <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+                    <div className="flex-1">
+                      <p className="text-sm uppercase tracking-[0.32em] text-emerald-300/80">{selectedLeader.role}</p>
+                      <h3 className="mt-2 text-2xl font-semibold text-white">{selectedLeader.name}</h3>
+                      <p className="mt-4 text-base leading-8 text-slate-200">{selectedLeader.message}</p>
+                    </div>
+                    <img src={selectedLeader.photo} alt={selectedLeader.name} className="h-56 w-56 rounded-[2.25rem] object-cover" />
+                  </div>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         <motion.section id="values" initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }} variants={sectionVariant} transition={{ duration: 0.7, ease: "easeOut" }} className="mx-auto max-w-7xl px-4 pb-24 sm:px-6 lg:px-8">
           <div className="space-y-4">
@@ -545,22 +620,14 @@ function App() {
                   Reach out from Pulo Gadung Jakarta Timur and let our supply experts connect your business with premium products and dependable service.
                 </p>
                 <div className="mt-8 space-y-4 text-sm text-slate-300">
-                  <div className="flex items-center gap-3">
-                    <MapPin className="h-4 w-4 text-emerald-300" />
-                    <span>Pulo Gadung Jakarta Timur</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Phone className="h-4 w-4 text-emerald-300" />
-                    <span>+62 812 3456 7890</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Mail className="h-4 w-4 text-emerald-300" />
-                    <span>info@karyasahabimakmur.id</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <ExternalLink className="h-4 w-4 text-emerald-300" />
-                    <span>www.karyasahabimakmur.id</span>
-                  </div>
+                  <ContactInfoRow
+                    icon={MapPin}
+                    text="Pulo Gadung Jakarta Timur"
+                    href="https://www.google.com/maps/search/?api=1&query=Jl.+Pisangan+Lama+I+No.1,+RT.1/RW.5,+Pisangan+Tim.,+Kec.+Pulo+Gadung,+Kota+Jakarta+Timur,+Daerah+Khusus+Ibukota+Jakarta+13230"
+                  />
+                  <ContactInfoRow icon={Phone} text="+62 812 3456 7890" href="tel:+6281234567890" />
+                  <ContactInfoRow icon={Mail} text="info@karyasahabimakmur.id" href="mailto:info@karyasahabimakmur.id" />
+                  <ContactInfoRow icon={ExternalLink} text="www.karyasahabimakmur.id" href="https://www.karyasahabimakmur.id" />
                 </div>
               </div>
 
