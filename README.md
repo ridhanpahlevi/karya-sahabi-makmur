@@ -27,3 +27,4 @@ A modern React-based company profile website built with Vite.
 ```bash
 npm run build
 ```
+    
